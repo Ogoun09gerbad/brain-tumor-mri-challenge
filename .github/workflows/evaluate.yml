@@ -1,3 +1,8 @@
+
+on:
+  workflow_dispatch:  # <--- Ajoute ça
+  push:               # <--- Et ça pour que ça réagisse quand tu envoies un fichier
+    branches: [ main ]
 name: 🧠 Evaluate Submission
 
 on:
