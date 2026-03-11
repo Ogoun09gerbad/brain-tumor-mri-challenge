@@ -1,0 +1,50 @@
+name: 🧠 Evaluate Submission
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'submissions/**.enc'
+  workflow_dispatch:
+
+jobs:
+  evaluate:
+    name: Decrypt & Score Submission
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install cryptography scikit-learn pandas tabulate
+
+      - name: Detect new .enc submission
+        id: detect
+        run: |
+          # On cherche le fichier .enc dans le dernier commit
+          ENC_FILE=$(git diff --name-only HEAD^ HEAD | grep 'submissions/.*\.enc$' | head -1)
+          if [ -z "$ENC_FILE" ]; then
+            # Si on lance manuellement (workflow_dispatch), on prend le premier .enc trouvé
+            ENC_FILE=$(find submissions -name "*.enc" | head -1)
+          fi
+          
+          if [ -z "$ENC_FILE" ]; then
+            echo "::error::Aucun fichier .enc trouvé."
+            exit 1
+          fi
+          
+          TEAM_NAME=$(basename "$ENC_FILE" .enc)
+          echo "enc_file=$ENC_FILE" >> $GITHUB_OUTPUT
+          echo "team_name=$TEAM_NAME" >> $GITHUB_OUTPUT
