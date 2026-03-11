@@ -15,6 +15,7 @@ venv/
 # Data (too large — participants download from Kaggle)
 data/Training/
 data/Testing/
+data 
 
 # Model checkpoints
 baseline/best_model.pth
