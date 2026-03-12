@@ -13,6 +13,8 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms, models
 from torch.optim import Adam
 from torch.optim.lr_scheduler import CosineAnnealingLR
+import matplotlib.pyplot as plt
+
 
 # ─── CONFIG ──────────────────────────────────────────────────────────────
 DATA_DIR      = "data"
@@ -37,8 +39,7 @@ def get_transforms(train=True):
             transforms.Resize((IMG_SIZE + 32, IMG_SIZE + 32)),
             transforms.RandomCrop(IMG_SIZE),
             transforms.RandomHorizontalFlip(),
-            transforms.RandomVerticalFlip(),
-            transforms.RandomRotation(15),
+            transforms.RandomVerticalFlip(),            transforms.RandomRotation(15),
             transforms.ColorJitter(brightness=0.2, contrast=0.2),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406],
