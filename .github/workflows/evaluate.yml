@@ -38,6 +38,15 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action Bot"
+          
+          # Ajout des fichiers générés
           git add leaderboard/leaderboard.csv evaluation/results/*.json
-          git commit -m "chore: update leaderboard [skip ci]" || echo "No changes"
-          git push
+          
+          # On vérifie s'il y a des changements avant de commit
+          if git diff --quiet && git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update leaderboard [skip ci]"
+            # On force le push du HEAD actuel vers la branche main
+            git push origin HEAD:main
+          fi
