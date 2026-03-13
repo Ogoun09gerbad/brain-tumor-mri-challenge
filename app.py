@@ -12,10 +12,15 @@ Les scores sont mis à jour automatiquement à chaque nouvelle soumission valid�
 """)
 
 # --- CHARGEMENT DES DONNÉES ---
-@st.cache_data(ttl=600) # Rafraîchir toutes les 10 minutes
+@st.cache_data(ttl=600)
 def load_data():
-    if os.path.exists("leaderboard/leaderboard.csv"):
-        return pd.read_csv("leaderboard/leaderboard.csv")
+    file_path = "leaderboard/leaderboard.csv"
+    if os.path.exists(file_path):
+        data = pd.read_csv(file_path)
+        # Vérification si le CSV est vide ou n'a pas les colonnes attendues
+        if data.empty or "Accuracy" not in data.columns:
+            return None
+        return data
     return None
 
 df = load_data()
@@ -24,9 +29,13 @@ if df is not None:
     # --- MÉTRIQUES CLÉS ---
     col1, col2, col3 = st.columns(3)
     col1.metric("Nombre d'équipes", len(df))
-    col2.metric("Meilleure Accuracy", f"{df['Accuracy'].max():.4f}")
-    col3.metric("Moyenne F1-Score", f"{df['F1-Score'].mean():.4f}")
-
+    # On utilise .get() ou on vérifie l'existence pour éviter le crash
+    max_acc = df["Accuracy"].max() if "Accuracy" in df.columns else 0
+    mean_f1 = df["F1-Score"].mean() if "F1-Score" in df.columns else 0
+    
+    col2.metric("Meilleure Accuracy", f"{max_acc:.4f}")
+    col3.metric("Moyenne F1-Score", f"{mean_f1:.4f}")
+    
     st.divider()
 
     # --- TABLEAU ET GRAPHIQUE ---
@@ -46,9 +55,9 @@ if df is not None:
         fig = px.scatter(df, x="Accuracy", y="F1-Score", hover_name="Team", 
                          color="Accuracy", color_continuous_scale="Viridis")
         st.plotly_chart(fig, use_container_width=True)
-
 else:
-    st.info("Le leaderboard est actuellement vide. En attente des premières soumissions !")
+    st.warning("⚠️ Le leaderboard est vide ou le fichier 'leaderboard.csv' est mal formaté.")
+    st.info("Lancez d'abord une évaluation pour générer les premiers résultats.")
 
 # --- SIDEBAR INFO ---
 st.sidebar.header("À propos")
