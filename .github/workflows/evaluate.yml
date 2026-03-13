@@ -30,9 +30,10 @@ jobs:
           pip install pandas scikit-learn cryptography
 
       - name: Setup Private Key
-        # Nécessaire uniquement pour déchiffrer VOTRE fichier de vérité
         run: |
           echo "${{ secrets.PRIVATE_KEY }}" > private_key_temp.pem
+          # On vérifie si le fichier commence bien par la balise attendue
+          head -n 1 private_key_temp.pem
           chmod 600 private_key_temp.pem
 
       - name: Decrypt Truth Labels
