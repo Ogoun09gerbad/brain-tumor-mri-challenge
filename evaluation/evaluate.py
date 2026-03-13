@@ -11,8 +11,7 @@ RESULTS_DIR = "evaluation/results"
 
 def evaluate_submission(submission_file):
     """
-    Compare une soumission avec la vérité terrain et calcule les scores.
-    Gère les erreurs d'en-têtes et les problèmes de formatage.
+    Compare une soumission avec la vérité terrain en utilisant les noms de classes.
     """
     print(f"[INFO] Évaluation du fichier : {submission_file}")
 
@@ -25,53 +24,46 @@ def evaluate_submission(submission_file):
         df_truth = pd.read_csv(TRUTH_FILE)
         df_pred = pd.read_csv(submission_file)
 
-        # 1. Normalisation stricte des colonnes (minuscules + sans espaces)
+        # 1. Normalisation des en-têtes
         df_truth.columns = [c.strip().lower() for c in df_truth.columns]
         df_pred.columns = [c.strip().lower() for c in df_pred.columns]
 
-        # 2. Vérification de la colonne indispensable 'filename'
+        # 2. Vérification colonnes
         if 'filename' not in df_pred.columns:
-            print("[ERREUR] La colonne 'filename' est manquante dans votre CSV.")
+            print("[ERREUR] La colonne 'filename' est manquante.")
             return None
 
-        # 3. Flexibilité sur la colonne de prédiction
-        # Le participant peut utiliser 'prediction' ou 'label'
-        target_col = None
-        for col in ['prediction', 'label']:
-            if col in df_pred.columns:
-                target_col = col
-                break
-        
+        target_col = next((c for c in ['prediction', 'label'] if c in df_pred.columns), None)
         if not target_col:
-            print("[ERREUR] Aucune colonne de prédiction trouvée ('prediction' ou 'label' attendu).")
+            print("[ERREUR] Colonne de prédiction ('prediction' ou 'label') manquante.")
             return None
 
-        # 4. Nettoyage des données (suppression des espaces dans les noms de fichiers)
-        df_truth['filename'] = df_truth['filename'].astype(str).str.strip()
-        df_pred['filename'] = df_pred['filename'].astype(str).str.strip()
+        # 3. Nettoyage des données (IMPORTANT pour les noms de classes)
+        # On passe tout en minuscule et on enlève les espaces pour la comparaison
+        for df in [df_truth, df_pred]:
+            df['filename'] = df['filename'].astype(str).str.strip()
+            # On applique la normalisation sur la colonne de label/prédiction
+            col = 'label' if 'label' in df.columns else target_col
+            df[col] = df[col].astype(str).str.strip().str.lower()
 
-        # 5. Alignement des données sur 'filename'
-        # On utilise un inner merge pour ne comparer que ce qui matche
+        # 4. Alignement (Merge)
         df_merged = pd.merge(df_truth, df_pred, on="filename", suffixes=("_true", "_pred"))
 
-        # Debugging pour t'aider en cas de soucis
-        print(f"[DEBUG] Lignes Truth: {len(df_truth)} | Lignes Pred: {len(df_pred)} | Match: {len(df_merged)}")
+        print(f"[DEBUG] Match : {len(df_merged)} images trouvées sur {len(df_truth)} attendues.")
 
         if len(df_merged) == 0:
-            print("[ERREUR] Aucun nom de fichier ne correspond entre votre CSV et la vérité terrain.")
-            print(f"Exemple attendu: '{df_truth['filename'].iloc[0]}'")
-            print(f"Exemple reçu: '{df_pred['filename'].iloc[0]}'")
+            print("[ERREUR] Aucun nom de fichier ne correspond.")
             return None
 
-        # 6. Extraction des vecteurs (on utilise 'label' pour la vérité car c'est ton en-tête)
-        y_true = df_merged["label"]
-        y_pred = df_merged[target_col]
+        # 5. Extraction des vecteurs
+        y_true = df_merged["label_true"]
+        y_pred = df_merged[f"{target_col}_pred"]
 
-        # 7. Calcul des métriques
+        # 6. Calcul des métriques
         acc = accuracy_score(y_true, y_pred)
         f1 = f1_score(y_true, y_pred, average="weighted")
         
-        # Le rapport de classification (on ignore les erreurs si les classes manquent)
+        # Rapport détaillé
         report = classification_report(y_true, y_pred, output_dict=True, zero_division=0)
 
         print(f"--- RÉSULTATS ---")
@@ -88,24 +80,21 @@ def evaluate_submission(submission_file):
         return None
 
 def save_results(team_name, metrics):
-    """Sauvegarde les scores dans un fichier JSON pour le leaderboard."""
     os.makedirs(RESULTS_DIR, exist_ok=True)
     output_path = os.path.join(RESULTS_DIR, f"{team_name}.json")
-    with open(output_path, "w") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(metrics, f, indent=4)
-    print(f"[OK] Résultats sauvegardés dans {output_path}")
+    print(f"[OK] Résultats sauvegardés : {output_path}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Évaluation MRI Challenge")
-    parser.add_argument("--submission", type=str, required=True, help="Chemin vers le CSV")
+    parser.add_argument("--submission", type=str, required=True, help="Chemin vers le CSV de l'élève")
     args = parser.parse_args()
 
     if os.path.exists(args.submission):
-        # Nettoyage du nom de l'équipe
         team_name = os.path.basename(args.submission).lower().replace(".csv", "").replace(" ", "_")
-        
         results = evaluate_submission(args.submission)
         if results:
             save_results(team_name, results)
     else:
-        print(f"[!] Erreur : Le fichier {args.submission} est introuvable.")
+        print(f"[!] Fichier introuvable : {args.submission}")
