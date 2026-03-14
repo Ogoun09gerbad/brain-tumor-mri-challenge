@@ -17,11 +17,7 @@
 
 ## 🏆 Leaderboard
 
-| Rank | Team | Accuracy | F1 Score (Macro) | Submissions | Last Updated |
-|------|------|----------|-------------------|-------------|--------------|
-| 🥇 | — | — | — | — | — |
-| 🥈 | — | — | — | — | — |
-| 🥉 | — | — | — | — | — |
+![Leaderbord](leaderboard/image/Leaderbord.png)
 
 > 📣 Leaderboard auto-updates within **2–5 minutes** after each valid submission.  
 > Full leaderboard: [`leaderboard/leaderboard.csv`](leaderboard/leaderboard.csv)
