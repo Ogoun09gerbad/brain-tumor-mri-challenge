@@ -15,6 +15,20 @@
 
 ---
 
+## 🏆 Leaderboard
+
+| Rank | Team | Accuracy | F1 Score (Macro) | Submissions | Last Updated |
+|------|------|----------|-------------------|-------------|--------------|
+| 🥇 | — | — | — | — | — |
+| 🥈 | — | — | — | — | — |
+| 🥉 | — | — | — | — | — |
+
+> 📣 Leaderboard auto-updates within **2–5 minutes** after each valid submission.  
+> Full leaderboard: [`leaderboard/leaderboard.csv`](leaderboard/leaderboard.csv)
+
+---
+
+## 📋 Overview
 
 ### Task
 Classify brain MRI images into **4 categories**:
