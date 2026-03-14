@@ -17,7 +17,7 @@
 
 ## 🏆 Leaderboard
 
-![Leaderbord](leaderbord/image/Leaderbord.png)
+![Leaderbord](leaderboard/image/Leaderbord.png)
 
 > 📣 Leaderboard auto-updates within **2–5 minutes** after each valid submission.  
 > Full leaderboard: [`leaderboard/leaderboard.csv`](leaderboard/leaderboard.csv)
